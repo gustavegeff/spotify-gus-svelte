@@ -1,3 +1,4 @@
+import type { AudioFeatures } from './interfaces/spotify-audio-features';
 import type { SpotifyUserProfile } from './interfaces/spotify-current-user-profile';
 import type { SpotifyCurrentlyPlaying } from './interfaces/spotify-currently-playing';
 import type { SpotifyPlaylist } from './interfaces/spotify-playlist';
@@ -141,5 +142,9 @@ export class SpotifyService {
 
     public async getUsersQueue() {
         return await this.spotifyGetRequest<SpotifyQueue>('/me/player/queue');
+    }
+
+    public async getTrackAudioFeatures(id: string) {
+        return await this.spotifyGetRequest<AudioFeatures>(`/audio-features/${id}`);
     }
 }

@@ -10,12 +10,15 @@
     import { PlayCircle, QueueList } from '@steeze-ui/heroicons';
     import type { SpotifyQueue } from '$lib/interfaces/spotify-queue';
     import TrackList from './TrackList.svelte';
+    import type { AudioFeatures } from '$lib/interfaces/spotify-audio-features';
+    import TrackAudioFeatures from './TrackAudioFeatures.svelte';
 
     export let spotifyService: SpotifyService;
 
     let currentlyPlayingItem: SpotifyCurrentlyPlaying | null = null;
     let currentPlaylist: SpotifyPlaylist | null = null;
     let currentQueue: SpotifyQueue | null;
+    let trackFeatures: AudioFeatures | null = null;
 
     let progress = 0;
     let selectedMenu = 0;
@@ -27,9 +30,6 @@
     function refreshCurrentlyPlayingItem() {
         if (refresh_timeout) clearTimeout(refresh_timeout);
         refresh_timeout = null;
-
-        if (interval) clearInterval(interval);
-        interval = null;
 
         spotifyService.getCurrentlyPlayingTrack().then((current) => {
             if (current) {
@@ -46,6 +46,9 @@
                     selectedMenu = 0;
                 }
 
+                if (interval) clearInterval(interval);
+                interval = null;
+
                 if (current.is_playing) {
                     // Start ticking
                     interval = setInterval(() => (progress += 1000), 1000);
@@ -55,6 +58,7 @@
 
                 if (current.item.id !== currentlyPlayingItem?.item.id) {
                     spotifyService.getUsersQueue().then((q) => (currentQueue = q));
+                    spotifyService.getTrackAudioFeatures(current.item.id).then((af) => (trackFeatures = af));
                 }
             } else {
                 if (interval) {
@@ -80,10 +84,15 @@
 
 {#if currentlyPlayingItem !== null}
     <div in:fade out:fade class="flex h-full w-auto items-center justify-center gap-x-8 px-4">
+        {#if trackFeatures !== null}
+            <div class="fixed top-4">
+                <TrackAudioFeatures {trackFeatures} />
+            </div>
+        {/if}
         <CurrentlyPlaying
             bind:currentlyPlayingItem
-            onPrev={() => spotifyService.skipToPrevious().then(() => refreshCurrentlyPlayingItem())}
-            onNext={() => spotifyService.skipToNext().then(() => refreshCurrentlyPlayingItem())}
+            onPrev={() => spotifyService.skipToPrevious().then(() => setTimeout(refreshCurrentlyPlayingItem, 100))}
+            onNext={() => spotifyService.skipToNext().then(() => setTimeout(refreshCurrentlyPlayingItem, 100))}
             onPause={() =>
                 spotifyService.pausePlayback().then(() => {
                     if (interval) clearInterval(interval);
