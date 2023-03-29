@@ -23,7 +23,7 @@
     <img
         class="rounded-lg"
         alt={currentlyPlayingItem.item.album.name}
-        src={currentlyPlayingItem.item.album.images[0].url}
+        src={currentlyPlayingItem.item.album.images[1].url}
     />
     <div class="flex max-w-[640px] flex-col items-center text-center">
         <div class="text-4xl text-gray-100">{currentlyPlayingItem.item.name}</div>
